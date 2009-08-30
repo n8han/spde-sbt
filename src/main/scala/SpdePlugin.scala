@@ -4,7 +4,7 @@ import sbt._
 
 class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
   val spdeVersion = propertyOptional[String]("1.0.3__0.1.0")
-  val spde = "us.technically" %% "spde-core" % spdeVersion.value
+  val spde = "net.databinder.spde" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
   val spdeSources = spdeSourcePath * "*.spde"
@@ -46,7 +46,7 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
 }
 
 class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) with JoglProject {
-  val opengl = "us.technically" % "processing-opengl" % spdeVersion.value
+  val opengl = "net.databinder.spde" % "processing-opengl" % spdeVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
   } )
