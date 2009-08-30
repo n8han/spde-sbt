@@ -46,7 +46,7 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
 }
 
 class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) with JoglProject {
-  val opengl = "us.technically" %% "processing-opengl" % spdeVersion.value
+  val opengl = "us.technically" % "processing-opengl" % spdeVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
   } )
