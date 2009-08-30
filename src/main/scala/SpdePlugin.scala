@@ -3,8 +3,8 @@ package spde
 import sbt._
 
 class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
-  val spdeVersion = "0.1-SNAPSHOT"
-  val spde = "us.technically" % "spde-core" % spdeVersion
+  val spdeVersion = propertyOptional[String]("1.0.3__0.1.0")
+  val spde = "us.technically" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
   val spdeSources = spdeSourcePath * "*.spde"
@@ -45,22 +45,32 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
   lazy val data = syncTask(spdeSourcePath / "data", mainCompilePath / "data")
 }
 
-class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) {
+class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) with JoglProject {
+  val opengl = "us.technically" %% "processing-opengl" % spdeVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
   } )
-  val opengl = "us.technically" % "processing-opengl" % spdeVersion
+}
+
+trait JoglProject extends BasicManagedProject {
+  val jogl_loc: String => String = 
+    "http://download.java.net/media/jogl/builds/archive/jsr-231-1.1.1/jogl-1.1.1-%s.zip" format _
+  val jogl_linux = "net.java.dev" % "jogl-linux" % "1.1.1" from jogl_loc("linux-i586")
+  val jogl_mac = "net.java.dev" % "jogl-mac" % "1.1.1" from jogl_loc("macosx-universal")
+
   val lib_compile = configurationPath(Configurations.Compile)
-  override def updateAction = super.updateAction && fileTask(lib_compile / "jogl.jar" :: Nil) {
-    import FileUtilities._ 
+
+  override def updateAction = super.updateAction && task {
+    import FileUtilities._
     val jogl_zip = outputPath / "jogl_zip"
-    ("linux-i586" :: "macosx-universal" :: Nil map { pf =>
-      new java.net.URL(
-        "http://download.java.net/media/jogl/builds/archive/jsr-231-1.1.1/jogl-1.1.1-%s.zip" format pf
-      )
-    }).foldLeft(None:Option[String]) { (last, url) =>
-      last orElse unzip(url, jogl_zip, "jogl-*/lib/*", log).left.toOption
-    } orElse {
+    ((lib_compile * "*.zip").get flatMap { file =>
+      unzip(file, jogl_zip, "jogl-*/lib/*", log).left.toOption.orElse {
+        FileUtilities.clean(file, log)
+      } toList
+    } match {
+      case Seq() => None
+      case list => Some(list mkString "\n")
+    }) orElse {
       val files = (jogl_zip ** "lib" ##) ** "*"
       copy(files.get, lib_compile, log).left.toOption
     }
