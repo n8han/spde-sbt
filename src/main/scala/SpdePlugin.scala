@@ -3,7 +3,7 @@ package spde
 import sbt._
 
 class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
-  val spdeVersion = propertyOptional[String]("1.0.3__0.1.0")
+  val spdeVersion = propertyOptional[String]("1.0.3__0.1.1")
   val spde = "net.databinder.spde" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
@@ -46,7 +46,7 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
 }
 
 class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) with JoglProject {
-  val opengl = "net.databinder.spde" % "processing-opengl" % spdeVersion.value intransitive()
+  val opengl = "net.databinder.spde" % "processing-opengl" % spdeVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
   } )
@@ -67,14 +67,14 @@ trait JoglProject extends BasicManagedProject {
     "http://download.java.net/media/jogl/builds/archive/jsr-231-%s/jogl-%s-%s.zip" format
       (jogl_vers, jogl_vers, jogl_sig)
   
-  val jogl = "net.java.dev" % ("jogl-" + jogl_sig) % jogl_vers from jogl_loc
+  val jogl = "net.java.dev" % ("jogl-" + jogl_sig) % jogl_vers % "provided->default" from jogl_loc
 
   val lib_compile = configurationPath(Configurations.Compile)
 
   override def updateAction = super.updateAction && task {
     import FileUtilities._
     val jogl_zip = outputPath / "jogl_zip"
-    ((lib_compile * "jogl-*.zip").get flatMap { file =>
+    ((configurationPath(Configurations.Provided) * "jogl-*.zip").get flatMap { file =>
       unzip(file, jogl_zip, "jogl-*/lib/*", log).left.toOption.orElse {
         FileUtilities.clean(file, log)
       } toList
@@ -83,7 +83,7 @@ trait JoglProject extends BasicManagedProject {
       case list => Some(list mkString "\n")
     }) orElse {
       val files = (jogl_zip ** "lib" ##) ** "*"
-      copy(files.get, lib_compile, log).left.toOption
+      copy(files.get, configurationPath(Configurations.Compile), log).left.toOption
     }
   }
 }
