@@ -35,10 +35,8 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
       |  lazy val px = new DrawProxy {
       |""".stripMargin.format(name, name), log
     ) orElse {
-      spdeSources.get foreach { f =>
-        import Process._
-        f.asFile #>> sourceGlob.asFile !
-      }
+      import Process._
+      cat(spdeSources.get.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
       FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
     }
   }
