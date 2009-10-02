@@ -8,9 +8,12 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
 
   val spdeSourcePath = path(".")
   val spdeSources = spdeSourcePath * "*.spde"
-  val managedScalaPath = "src_managed" / "main" / "scala"
+  val managedSources = "src_managed" / "main"
+  val managedScalaPath = managedSources / "scala"
+  val managedResourcesPath = managedSources / "resources"
   val sourceGlob = managedScalaPath / "glob.scala"
   override def mainSourceRoots = super.mainSourceRoots +++ managedScalaPath
+  override def mainResources = super.mainResources +++ descendents(managedResourcesPath ##, "*")
   override def compileAction = super.compileAction dependsOn (glob, data)
 
   override def watchPaths = super.watchPaths +++ spdeSources
@@ -40,5 +43,5 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
       FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
     }
   }
-  lazy val data = syncTask(spdeSourcePath / "data", mainCompilePath / "data")
+  lazy val data = syncTask(spdeSourcePath / "data", managedResourcesPath / "data")
 }
