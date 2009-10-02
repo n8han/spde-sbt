@@ -2,6 +2,8 @@ package spde
 
 import sbt._
 
+import archetect.TemplateTasks
+
 class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
   val spdeVersion = propertyOptional[String]("1.0.3__0.1.1")
   val spde = "net.databinder.spde" %% "spde-core" % spdeVersion.value
