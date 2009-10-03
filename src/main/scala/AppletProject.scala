@@ -2,7 +2,7 @@ package spde
 
 import sbt._
 
-trait AppletProject extends SpdeProject with archetect.TemplateTasks
+trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.TemplateTasks
 {
   // this project's Proguard invocation tasks are derived from sbt.LoaderProject
   import java.io.File
@@ -70,20 +70,19 @@ trait AppletProject extends SpdeProject with archetect.TemplateTasks
         |%s
         |-outjars %s
         |-ignorewarnings
-        |-keep class com.sun.opengl.impl.** { *** *(***); }
         |-keep class %s
         |-keep class MyRunner { *** main(...); }
         |-keep class processing.core.PApplet { *** main(...); }
         |-keep class spde.core.SApplet { *** scripty(...); }
         |-keepclasseswithmembers class * { public void dispose(); }
-        |-keep public class org.apache.commons.logging.impl.LogFactoryImpl
-        |-keep public class org.apache.commons.logging.impl.Jdk14Logger { *** <init>(...); }
-        |-keep public class net.databinder.dispatch.Http* { scala.Function1 ok(); }
         |"""
       
       val defaultJar = (outputPath / defaultJarName).asFile.getAbsolutePath
       log.debug("proguard configuration using main jar " + defaultJar)
-      val externalDependencies = (mainCompileConditional.analysis.allExternals).map(_.getAbsoluteFile).filter(_.getName.endsWith(".jar"))
+      val externalDependencies = Set() ++ (
+        mainCompileConditional.analysis.allExternals ++ compileClasspath.get.map { _.asFile }
+      ) map { _.getAbsoluteFile } filter {  _.getName.endsWith(".jar") }
+      
       log.debug("proguard configuration external dependencies: \n\t" + externalDependencies.mkString("\n\t"))
       // partition jars from the external jar dependencies of this project by whether they are located in the project directory
       // if they are, they are specified with -injars, otherwise they are specified with -libraryjars

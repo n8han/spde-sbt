@@ -4,7 +4,9 @@ import sbt._
 
 import archetect.TemplateTasks
 
-class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
+class DefaultSpdeProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject with AppletProject
+
+trait SpdeProject extends BasicScalaProject {
   val spdeVersion = propertyOptional[String]("1.0.3__0.1.1")
   val spde = "net.databinder.spde" %% "spde-core" % spdeVersion.value
 
@@ -14,8 +16,8 @@ class SpdeProject(info: ProjectInfo) extends DefaultProject(info) {
   val managedScalaPath = managedSources / "scala"
   val managedResourcesPath = managedSources / "resources"
   val sourceGlob = managedScalaPath / "glob.scala"
-  override def mainSourceRoots = super.mainSourceRoots +++ managedScalaPath
-  override def mainResources = super.mainResources +++ descendents(managedResourcesPath ##, "*")
+  abstract override def mainSourceRoots = super.mainSourceRoots +++ managedScalaPath
+  abstract override def mainResources = super.mainResources +++ descendents(managedResourcesPath ##, "*")
   override def compileAction = super.compileAction dependsOn (glob, data)
 
   override def watchPaths = super.watchPaths +++ spdeSources

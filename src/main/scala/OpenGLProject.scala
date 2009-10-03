@@ -2,7 +2,10 @@ package spde
 
 import sbt._
 
-class SpdeOpenGLProject(info: ProjectInfo) extends SpdeProject(info) with JoglProject {
+// applet export not yet supported
+class DefaultOpenGLProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject
+
+trait OpenGLProject extends SpdeProject with PackagePaths with JoglProject {
   val opengl = "net.databinder.spde" % "processing-opengl" % spdeVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil

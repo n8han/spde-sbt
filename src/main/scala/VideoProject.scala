@@ -1,10 +1,13 @@
+package spde
+
 import sbt._
 import java.io.File
 import java.net.URL
 import FileUtilities.{copyFlat, unzip, withTemporaryDirectory => tempDirectory}
-import spde.SpdeProject
 
-protected class SampleVideoProject(info: ProjectInfo) extends SpdeProject(info) with DirectProject with SampleProject
+// applet export not yet tested
+class DefaultVideoProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject
+
 trait VideoProject extends SpdeProject
 {
   def gsvideoMainVersion = "0.6"
@@ -29,6 +32,7 @@ trait VideoProject extends SpdeProject
   }
   protected def copyExtracted(files: scala.collection.Set[Path]): Option[String] = copyFlat(files, configurationPath(Configurations.Compile), log).left.toOption
 }
+class SampleVideoProject(info: ProjectInfo) extends DefaultVideoProject(info) with DirectProject with SampleProject
 trait SampleProject extends VideoProject
 {
   def sampleDirectory: Path = "data"
