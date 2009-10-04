@@ -7,7 +7,7 @@ import archetect.TemplateTasks
 class DefaultSpdeProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject with AppletProject
 
 trait SpdeProject extends BasicScalaProject {
-  val spdeVersion = propertyOptional[String]("1.0.3__0.1.1")
+  val spdeVersion = propertyOptional[String]("1.0.3__0.1.2-SNAPSHOT")
   val spde = "net.databinder.spde" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
