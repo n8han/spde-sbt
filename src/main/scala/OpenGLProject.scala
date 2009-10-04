@@ -3,7 +3,7 @@ package spde
 import sbt._
 
 // applet export not yet supported
-class DefaultOpenGLProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject
+class DefaultOpenGLProject(info: ProjectInfo) extends DefaultProject(info) with OpenGLProject
 
 trait OpenGLProject extends SpdeProject with PackagePaths with JoglProject {
   val opengl = "net.databinder.spde" % "processing-opengl" % spdeVersion.value
