@@ -32,15 +32,16 @@ trait SpdeProject extends BasicScalaProject {
 
   lazy val glob = fileTask(sourceGlob from spdeSources) {
     FileUtilities.write(sourceGlob.asFile,
-"""   |import processing.core._
-      |import PConstants._
-      |import PApplet._
+      // wrapping code, stripped to one line so error line numbers will match
+"""   |import processing.core._;
+      |import PConstants._;
+      |import PApplet._;
       |object MyRunner {
       |  def main(args: Array[String]) { PApplet.main(Array("%s")) }
-      |}
+      |};
       |class %s extends spde.core.SApplet {
       |  lazy val px = new DrawProxy {
-      |""".stripMargin.format(name, name), log
+      |""".stripMargin.replaceAll("\n","").format(name, name), log
     ) orElse {
       import Process._
       cat(spdeSources.get.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
