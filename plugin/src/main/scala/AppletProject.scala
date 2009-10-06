@@ -18,8 +18,8 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
   def rootProjectDirectory = rootProject.info.projectPath
 
   /****** Dependencies  *******/
-  val defaultConfig = config("default")
   val toolsConfig = config("tools")
+  val defaultConfig = Configurations.Default
   val proguardJar = "net.sf.proguard" % "proguard" % "4.3" % "tools->default"
   
   /******** Proguard *******/
@@ -33,7 +33,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
     {
       FileUtilities.clean(outputJar :: Nil, log)
       val proguardClasspathString = Path.makeString(managedClasspath(toolsConfig).get)
-      val configFile = proguardConfigurationPath.asFile.getAbsolutePath
+      val configFile = proguardConfigurationPath.toString
       val exitValue = Process("java", List("-Xmx256M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
       if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
     }
@@ -82,19 +82,20 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
         mainCompileConditional.analysis.allExternals ++ compileClasspath.get.map { _.asFile }
       ) map { _.getAbsoluteFile } filter {  _.getName.endsWith(".jar") }
       
+      def quote(s: Any) = '"' + s.toString + '"'
       log.debug("proguard configuration external dependencies: \n\t" + externalDependencies.mkString("\n\t"))
       // partition jars from the external jar dependencies of this project by whether they are located in the project directory
       // if they are, they are specified with -injars, otherwise they are specified with -libraryjars
       val (externalJars, libraryJars) = externalDependencies.toList.partition(jar => Path.relativize(rootProjectDirectory, jar).isDefined)
       log.debug("proguard configuration library jars locations: " + libraryJars.mkString(", "))
       // exclude properties files and manifests from scala-library jar
-      val inJars = (defaultJar :: externalJars.map( _ + "(!META-INF/**,!*.txt)")).map("-injars " + _).mkString("\n")
+      val inJars = (quote(defaultJar) :: externalJars.map(quote(_) + "(!META-INF/**,!*.txt)")).map("-injars " + _).mkString("\n")
       
       val (width, height, renderers) = renderInfo
       
       val proguardConfiguration =
-        outTemplate.stripMargin.format(libraryJars.mkString(File.pathSeparator),
-          inJars, outputJar.absolutePath, name) + renderers.map { renderer =>
+        outTemplate.stripMargin.format(libraryJars.map(quote).mkString(File.pathSeparator),
+          inJars, quote(outputJar.absolutePath), name) + renderers.map { renderer =>
             "-keep class %s { *** <init>(...); }\n" format renderer
           }.mkString
       log.debug("Proguard configuration written to " + proguardConfigurationPath)
