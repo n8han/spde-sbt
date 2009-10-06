@@ -32,10 +32,9 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
   private def proguardTask = fileTask(outputJar from sourceGlob)
     {
       FileUtilities.clean(outputJar :: Nil, log)
-      val proguardClasspath = managedClasspath(toolsConfig)
-      val proguardClasspathString = Path.makeString(proguardClasspath.get)
+      val proguardClasspathString = Path.makeString(managedClasspath(toolsConfig).get)
       val configFile = proguardConfigurationPath.asFile.getAbsolutePath
-      val exitValue = Process("java", List("-Xmx128M", "-cp", proguardClasspathString, "proguard.ProGuard", "@\"%s\"" format configFile)) ! log
+      val exitValue = Process("java", List("-Xmx256M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
       if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
     }
   private def renderInfo = {
