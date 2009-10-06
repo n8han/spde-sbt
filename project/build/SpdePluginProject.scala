@@ -18,7 +18,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
     )
     lazy val proj_target = arcOutput / "graft"
     lazy val proj_target_target = proj_target / "target"
-    lazy val installer = fileTask(proj_target_target from arcSource ** "*") {
+    lazy val installer = task {
       proj_target_target.asFile.setLastModified(System.currentTimeMillis)
       (new java.lang.ProcessBuilder("sbt", "clean", "installer") directory proj_target.asFile) ! log match {
         case 0 => None
