@@ -35,12 +35,12 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       val proguardClasspath = managedClasspath(toolsConfig)
       val proguardClasspathString = Path.makeString(proguardClasspath.get)
       val configFile = proguardConfigurationPath.asFile.getAbsolutePath
-      val exitValue = Process("java", List("-Xmx128M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
+      val exitValue = Process("java", List("-Xmx128M", "-cp", proguardClasspathString, "proguard.ProGuard", "@\"%s\"" format configFile)) ! log
       if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
     }
   private def renderInfo = {
     // tasks that call here should depend on glob
-    val sz = """\s*size\s*\(\s*(\d+)\s*,\s*(\d+),?\s*(\S*)\s*\)\s*""".r
+    val sz = """(?s).*size\s*\(\s*(\d+)\s*,\s*(\d+),?\s*(\S*)\s*\).*""".r
     val sz_line = io.Source.fromFile(sourceGlob.asFile).getLines.find(None != sz.findFirstIn(_))
     val rendererMap = Map (
       "P3D" -> "processing.core.PGraphics3D",
