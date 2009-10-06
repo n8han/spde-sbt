@@ -2,6 +2,10 @@ import sbt._
 
 class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
 {
+  // parent project should not be published
+  override def publishAction = task { None }
+  override def publishConfiguration = publishLocalConfiguration
+
   lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) {
     override def managedStyle = ManagedStyle.Maven
     val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
