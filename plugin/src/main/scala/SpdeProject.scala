@@ -38,12 +38,12 @@ trait SpdeProject extends BasicScalaProject {
 """     |import processing.core._;
         |import PConstants._;
         |import PApplet._;
-        |object MyRunner {
-        |  def main(args: Array[String]) { PApplet.main(Array("%s")) }
+        |object `%sRunner` {
+        |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |};
-        |class %s extends spde.core.SApplet {
+        |class `%s` extends spde.core.SApplet {
         |  lazy val px = new DrawProxy {
-        |""".stripMargin.replaceAll("\n","").format(name, name), log
+        |""".stripMargin.replaceAll("\n","").format(name, name, name), log
       ) orElse {
         import Process._
         cat(sources.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
