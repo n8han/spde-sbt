@@ -23,20 +23,20 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
   val proguardJar = "net.sf.proguard" % "proguard" % "4.3" % "tools->default"
   
   /******** Proguard *******/
-  lazy val proguard = proguardTask dependsOn(`package`, glob, writeProguardConfiguration)
-  lazy val writeProguardConfiguration = writeProguardConfigurationTask dependsOn `package`
-  lazy val pack = packTask dependsOn(proguard)
-  lazy val writeHtml = writeHtmlTask dependsOn(glob)
-  lazy val applet = appletTask dependsOn (pack, writeHtml)
+  private lazy val proguard = proguardTask dependsOn(`package`, glob, writeProguardConfiguration)
+  private lazy val writeProguardConfiguration = writeProguardConfigurationTask dependsOn `package`
+  private lazy val pack = packTask dependsOn(proguard)
+  private lazy val writeHtml = writeHtmlTask dependsOn(glob)
+  lazy val applet = (appletTask dependsOn (pack, writeHtml) describedAs
+    "Generate an optimized and compressed applet jar and html file in target/applet")
   
-  private def proguardTask = fileTask(outputJar from sourceGlob)
-    {
-      FileUtilities.clean(outputJar :: Nil, log)
-      val proguardClasspathString = Path.makeString(managedClasspath(toolsConfig).get)
-      val configFile = proguardConfigurationPath.toString
-      val exitValue = Process("java", List("-Xmx256M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
-      if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
-    }
+  private def proguardTask = fileTask(outputJar from sourceGlob) {
+    FileUtilities.clean(outputJar :: Nil, log)
+    val proguardClasspathString = Path.makeString(managedClasspath(toolsConfig).get)
+    val configFile = proguardConfigurationPath.toString
+    val exitValue = Process("java", List("-Xmx256M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
+    if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
+  }
   private def renderInfo = {
     // tasks that call here should depend on glob
     val sz = """(?s).*size\s*\(\s*(\d+)\s*,\s*(\d+),?\s*(\S*)\s*\).*""".r

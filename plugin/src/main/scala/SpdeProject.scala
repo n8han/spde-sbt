@@ -31,24 +31,25 @@ trait SpdeProject extends BasicScalaProject {
   override def fork = Some(new ProjectDirectoryRun)
 
   lazy val glob = fileTask(sourceGlob from spdeSources) {
-    FileUtilities.write(sourceGlob.asFile,
-      // wrapping code, stripped to one line so error line numbers will match
-"""   |import processing.core._;
-      |import PConstants._;
-      |import PApplet._;
-      |object MyRunner {
-      |  def main(args: Array[String]) { PApplet.main(Array("%s")) }
-      |};
-      |class %s extends spde.core.SApplet {
-      |  lazy val px = new DrawProxy {
-      |""".stripMargin.replaceAll("\n","").format(name, name), log
-    ) orElse {
-      import Process._
-      val sources = spdeSources.get
-      if (!sources.isEmpty)
-        cat(spdeSources.get.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
-      FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
-    }
-  }
-  lazy val data = syncTask(spdeSourcePath / "data", managedResourcesPath / "data")
+    val sources = spdeSources.get
+    if (sources.isEmpty) None else
+      FileUtilities.write(sourceGlob.asFile,
+        // wrapping code, stripped to one line so error line numbers will match
+"""     |import processing.core._;
+        |import PConstants._;
+        |import PApplet._;
+        |object MyRunner {
+        |  def main(args: Array[String]) { PApplet.main(Array("%s")) }
+        |};
+        |class %s extends spde.core.SApplet {
+        |  lazy val px = new DrawProxy {
+        |""".stripMargin.replaceAll("\n","").format(name, name), log
+      ) orElse {
+        import Process._
+        cat(sources.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
+        FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
+      }
+  } describedAs "Combine all .spde sources into src_managed/scala/glob.scala"
+  lazy val data = (syncTask(spdeSourcePath / "data", managedResourcesPath / "data")
+    describedAs "Synch data/ with src_managed/main/resources/data/"  )
 }
