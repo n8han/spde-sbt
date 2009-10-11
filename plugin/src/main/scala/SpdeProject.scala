@@ -41,7 +41,7 @@ trait SpdeProject extends BasicScalaProject {
         |object `%sRunner` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |};
-        |class `%s` extends spde.core.SApplet {
+        |class `%s` extends spde.core.ProxiedApplet {
         |  lazy val px = new DrawProxy {
         |""".stripMargin.replaceAll("\n","").format(name, name, name), log
       ) orElse {
