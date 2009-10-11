@@ -44,7 +44,9 @@ trait SpdeProject extends BasicScalaProject {
       |""".stripMargin.replaceAll("\n","").format(name, name), log
     ) orElse {
       import Process._
-      cat(spdeSources.get.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
+      val sources = spdeSources.get
+      if (!sources.isEmpty)
+        cat(spdeSources.get.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
       FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
     }
   }
