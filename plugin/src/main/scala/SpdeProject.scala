@@ -32,22 +32,25 @@ trait SpdeProject extends BasicScalaProject {
 
   lazy val glob = fileTask(sourceGlob from spdeSources) {
     val sources = spdeSources.get
+    val sgf = sourceGlob.asFile
     if (sources.isEmpty) None else
-      FileUtilities.write(sourceGlob.asFile,
+      FileUtilities.write(sgf,
         // wrapping code, stripped to one line so error line numbers will match
-"""     |import processing.core._;
-        |import PConstants._;
-        |import PApplet._;
+"""     |import processing.core._
+        |import PConstants._
+        |import PApplet._
         |object `%sRunner` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
-        |};
+        |}
         |class `%s` extends spde.core.ProxiedApplet {
         |  lazy val px = new DrawProxy {
-        |""".stripMargin.replaceAll("\n","").format(name, name, name), log
+        |""".stripMargin.format(name, name, name), log
       ) orElse {
-        import Process._
-        cat(sources.map(_.asFile).toSeq) #>> sourceGlob.asFile ! (log)
-        FileUtilities.append(sourceGlob.asFile, "\n  }\n}", log)
+        import scala.io.Source.fromFile
+        for(s <- sources; f = s.asFile; (l, n) <- fromFile(f).getLines.zipWithIndex)
+          FileUtilities.append(sgf, l.stripLineEnd + 
+            " // %s: %d\n" format(s.asFile.getName, n), log)
+        FileUtilities.append(sgf, "\n  }\n}", log)
       }
   } describedAs "Combine all .spde sources into src_managed/scala/glob.scala"
   lazy val data = (syncTask(spdeSourcePath / "data", managedResourcesPath / "data")
