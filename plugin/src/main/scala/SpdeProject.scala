@@ -49,7 +49,7 @@ trait SpdeProject extends BasicScalaProject {
         import scala.io.Source.fromFile
         for(s <- sources; f = s.asFile; (l, n) <- fromFile(f).getLines.zipWithIndex)
           FileUtilities.append(sgf, l.stripLineEnd + 
-            " // %s: %d\n" format(s.asFile.getName, n), log)
+            " // %s: %d\n" format(s.asFile.getName, n+1), log)
         FileUtilities.append(sgf, "\n  }\n}", log)
       }
   } describedAs "Combine all .spde sources into src_managed/scala/glob.scala"
