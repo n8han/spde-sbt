@@ -29,22 +29,26 @@ trait SpdeProject extends BasicScalaProject {
   }
 
   override def fork = Some(new ProjectDirectoryRun)
+  
+  def appletClass = "ProxiedApplet"
+  def proxyClass = "DrawProxy"
+  def imports = "processing.core._" :: "spde.core._" :: "PConstants._" :: "PApplet._" :: Nil
 
   lazy val glob = fileTask(sourceGlob from spdeSources) {
     val sources = spdeSources.get
     val sgf = sourceGlob.asFile
     if (sources.isEmpty) None else
       FileUtilities.write(sgf,
-        // wrapping code, stripped to one line so error line numbers will match
-"""     |import processing.core._
-        |import PConstants._
-        |import PApplet._
+"""     |%s
         |object `%sRunner` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |}
-        |class `%s` extends spde.core.ProxiedApplet {
-        |  lazy val px = new DrawProxy {
-        |""".stripMargin.format(name, name, name), log
+        |class `%s` extends %s {
+        |  lazy val px = new %s(this) {
+        |""".stripMargin.format(
+          imports.mkString("import ", "\nimport ", ""), 
+          name, name, name, appletClass, proxyClass
+        ), log
       ) orElse {
         import scala.io.Source.fromFile
         for(s <- sources; f = s.asFile; (l, n) <- fromFile(f).getLines.zipWithIndex)

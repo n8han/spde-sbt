@@ -10,6 +10,7 @@ class DefaultVideoProject(info: ProjectInfo) extends DefaultProject(info) with S
 
 trait VideoProject extends SpdeProject
 {
+  val spde_video = "net.databinder.spde" %% "spde-video" % spdeVersion.value
   def gsvideoMainVersion = "0.6"
   def gsvideoVersion = gsvideoMainVersion + "-pre0"
   def gsvideoName = "gsvideo"
@@ -25,6 +26,10 @@ trait VideoProject extends SpdeProject
 
   def gsvideoFilter: NameFilter = "gsvideo/library/gsvideo.jar"
   def gsvideoZip = configurationPath(gsvideoConf)  / gsvideoArtifactName
+  
+  override def appletClass = "ProxiedVideoApplet"
+  override def proxyClass = "DrawVideoProxy"
+  override def imports = "spde.video._" :: "codeanticode.gsvideo._" :: super.imports
 
   override def updateAction = gsvideoExtract dependsOn(super.updateAction)
   lazy val gsvideoExtract = task {
@@ -32,7 +37,7 @@ trait VideoProject extends SpdeProject
   }
   protected def copyExtracted(files: scala.collection.Set[Path]): Option[String] = copyFlat(files, configurationPath(Configurations.Compile), log).left.toOption
 }
-class SampleVideoProject(info: ProjectInfo) extends DefaultVideoProject(info) with DirectProject with SampleProject
+class SampleVideoProject(info: ProjectInfo) extends DefaultVideoProject(info) with SampleProject
 trait SampleProject extends VideoProject
 {
   def sampleDirectory: Path = "data"
@@ -44,27 +49,4 @@ trait SampleProject extends VideoProject
     val (sample, libs) = files.partition(path => "station.mov".accept(path.asFile))
     copyFlat(sample, sampleDirectory, log).left.toOption orElse super.copyExtracted(Set() ++ libs)
   }
-}
-
-trait DirectProject extends SpdeProject
-{
-  override lazy val glob = directGlob
-  def directGlob = fileTask(sourceGlob from spdeSources) {
-    FileUtilities.write(sourceGlob.asFile,
-"""   |import processing.core._
-      |import PConstants._
-      |import PApplet._
-      |object MyRunner {
-      |  def main(args: Array[String]) { PApplet.main(Array("%s")) }
-      |}
-      |class %s extends spde.core.SApplet {
-      |""".stripMargin.format(name, name), log
-    ) orElse {
-    spdeSources.get foreach { f =>
-      import Process._
-      f.asFile #>> sourceGlob.asFile !
-    }
-    FileUtilities.append(sourceGlob.asFile, "\n}", log)
-   }
- }
 }
