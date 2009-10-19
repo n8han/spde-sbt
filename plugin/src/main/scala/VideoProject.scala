@@ -8,9 +8,7 @@ import FileUtilities.{copyFlat, unzip, withTemporaryDirectory => tempDirectory}
 // applet export not yet tested
 class DefaultVideoProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject
 
-trait VideoProject extends SpdeProject
-{
-  val spde_video = "net.databinder.spde" %% "spde-video" % spdeVersion.value
+trait GSVideoProject extends BasicScalaProject{
   def gsvideoMainVersion = "0.6"
   def gsvideoVersion = gsvideoMainVersion + "-pre0"
   def gsvideoName = "gsvideo"
@@ -27,15 +25,18 @@ trait VideoProject extends SpdeProject
   def gsvideoFilter: NameFilter = "gsvideo/library/gsvideo.jar"
   def gsvideoZip = configurationPath(gsvideoConf)  / gsvideoArtifactName
   
-  override def appletClass = "ProxiedVideoApplet"
-  override def proxyClass = "DrawVideoProxy"
-  override def imports = "spde.video._" :: "codeanticode.gsvideo._" :: super.imports
-
   override def updateAction = gsvideoExtract dependsOn(super.updateAction)
   lazy val gsvideoExtract = task {
     tempDirectory(log) {  temp => Control.thread(unzip(gsvideoZip, Path.fromFile(temp), gsvideoFilter, log))(copyExtracted) }
   }
   protected def copyExtracted(files: scala.collection.Set[Path]): Option[String] = copyFlat(files, configurationPath(Configurations.Compile), log).left.toOption
+}
+trait VideoProject extends SpdeProject with GSVideoProject
+{
+  val spde_video = "net.databinder.spde" %% "spde-video" % spdeVersion.value
+  override def appletClass = "ProxiedVideoApplet"
+  override def proxyClass = "DrawVideoProxy"
+  override def imports = "spde.video._" :: "codeanticode.gsvideo._" :: super.imports
 }
 class SampleVideoProject(info: ProjectInfo) extends DefaultVideoProject(info) with SampleProject
 trait SampleProject extends VideoProject
