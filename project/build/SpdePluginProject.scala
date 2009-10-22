@@ -8,8 +8,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
 
   lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) {
     override def managedStyle = ManagedStyle.Maven
-    val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
-    Credentials(Path.userHome / ".ivy2" / ".credentials", log)
+    lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
   })
   
   lazy val graft = project("graft", "spde-sbt graft", new DefaultProject(_) with archetect.ArchetectProject {
