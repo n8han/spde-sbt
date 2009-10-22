@@ -33,7 +33,7 @@ trait GSVideoProject extends BasicScalaProject{
 }
 trait VideoProject extends SpdeProject with GSVideoProject
 {
-  val spde_video = "net.databinder.spde" %% "spde-video" % spdeVersion.value
+  val spde_video = "us.technically.spde" %% "spde-video" % spdeVersion.value
   override def appletClass = "ProxiedVideoApplet"
   override def proxyClass = "DrawVideoProxy"
   override def imports = "spde.video._" :: "codeanticode.gsvideo._" :: super.imports
