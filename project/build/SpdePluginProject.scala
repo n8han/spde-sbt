@@ -6,9 +6,10 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
   override def publishAction = task { None }
   override def publishConfiguration = publishLocalConfiguration
 
-  lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) {
+  lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) with AutoCompilerPlugins {
     override def managedStyle = ManagedStyle.Maven
     lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
+    val sxr = compilerPlugin("org.scala-tools.sxr" %% "sxr" % "0.2.3")
   })
   
   lazy val graft = project("graft", "spde-sbt graft", new DefaultProject(_) with archetect.ArchetectProject {
