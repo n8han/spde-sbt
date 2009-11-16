@@ -34,15 +34,16 @@ trait JoglProject extends BasicManagedProject {
   override def updateAction = super.updateAction && task {
     import FileUtilities._
     val jogl_zip = outputPath / "jogl_zip"
-    ((configurationPath(Configurations.Provided) * "jogl-*.zip").get flatMap { file =>
+    ((configurationPath(Configurations.Provided) * "jogl-*.zip").get.toList flatMap { file =>
       unzip(file, jogl_zip, "jogl-*/lib/*", log).left.toOption.orElse {
         FileUtilities.clean(file, log)
-      } toList
+      }
     } match {
-      case Seq() => None
+      case Nil => None
       case list => Some(list mkString "\n")
     }) orElse {
       val files = (jogl_zip ** "lib" ##) ** "*"
+      println("about to copy")
       copy(files.get, configurationPath(Configurations.Compile), log).left.toOption
     }
   }
