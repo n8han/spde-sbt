@@ -40,7 +40,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
   private def renderInfo = {
     // tasks that call here should depend on glob
     val sz = """(?s).*size\s*\(\s*(\d+)\s*,\s*(\d+),?\s*(\S*)\s*\).*""".r
-    val sz_line = io.Source.fromFile(sourceGlob.asFile).getLines.find(None != sz.findFirstIn(_))
+    val sz_line = io.Source.fromFile(sourceGlob.asFile).getLines().find(None != sz.findFirstIn(_))
     val rendererMap = Map (
       "P3D" -> "processing.core.PGraphics3D",
       "JAVA2D" -> "processing.core.PGraphicsJava2D",
@@ -51,9 +51,9 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
     val univRenderers = "processing.core.PGraphicsJava2D" :: Nil
     
     sz_line match {
+      case Some(sz(width, height)) => (width, height, univRenderers)
       case Some(sz(width, height, "")) => (width, height, univRenderers)
       case Some(sz(width, height, r)) => (width, height, rendererMap(r) :: univRenderers)
-      case Some(sz(width, height)) => (width, height, univRenderers)
       case _ => (100, 100, univRenderers)
     }
   }

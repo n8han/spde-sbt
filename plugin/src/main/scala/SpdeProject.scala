@@ -31,6 +31,11 @@ trait SpdeProject extends BasicScalaProject {
 
   override def fork = Some(new ProjectDirectoryRun)
   
+  // permits a parameters to follow a call to Source#getLines in 2.7
+  protected implicit def getLines27(iter: Iterator[String]) = new {
+    def apply() = iter
+  }
+
   def appletClass = "ProxiedApplet"
   def proxyClass = "DrawProxy"
   def imports = "processing.core._" :: "spde.core._" :: "PConstants._" :: "PApplet._" :: Nil
@@ -52,7 +57,7 @@ trait SpdeProject extends BasicScalaProject {
         ), log
       ) orElse {
         import scala.io.Source.fromFile
-        for(s <- sources; f = s.asFile; (l, n) <- fromFile(f).getLines.zipWithIndex)
+        for(s <- sources; f = s.asFile; (l, n) <- fromFile(f).getLines().zipWithIndex)
           FileUtilities.append(sgf, l.stripLineEnd + 
             " // %s: %s\n".format(f.getName, n+1), log)
         FileUtilities.append(sgf, "\n  }\n}", log)
