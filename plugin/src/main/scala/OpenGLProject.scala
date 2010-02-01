@@ -6,7 +6,7 @@ import sbt._
 class DefaultOpenGLProject(info: ProjectInfo) extends DefaultProject(info) with OpenGLProject
 
 trait OpenGLProject extends SpdeProject with PackagePaths with JoglProject {
-  val opengl = "us.technically.spde" % "processing-opengl" % spdeVersion.value
+  val opengl = "org.processing" % "opengl" % processingVersion.value
   override def fork = Some(new ProjectDirectoryRun { 
     override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
   } )
