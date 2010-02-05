@@ -30,7 +30,12 @@ trait SpdeProject extends BasicScalaProject {
     override def workingDirectory = Some(info.projectPath.asFile)
   }
 
-  override def fork = Some(new ProjectDirectoryRun)
+  type xsbt = { def forkRun: Option[ForkScala] }
+  override def fork = try {
+    this.asInstanceOf[xsbt].forkRun
+  } catch { // let's be nice and work with sbt 0.5.x for a while
+    case e: NoSuchMethodException => Some(new ProjectDirectoryRun)
+  }
   
   // permits a parameters to follow a call to Source#getLines in 2.7
   protected implicit def getLines27(iter: Iterator[String]) = new {
