@@ -8,7 +8,7 @@ class DefaultSpdeProject(info: ProjectInfo) extends DefaultProject(info) with Sp
 
 trait SpdeProject extends BasicScalaProject {
   val databinder_repo = "Databinder Repository" at "http://databinder.net/repo"
-  val spdeVersion = propertyOptional[String]("0.2.4-SNAPSHOT")
+  val spdeVersion = propertyOptional[String]("0.2.4")
   val processingVersion = propertyOptional[String]("1.0.9")
   val spde = "us.technically.spde" %% "spde-core" % spdeVersion.value
 
@@ -26,16 +26,7 @@ trait SpdeProject extends BasicScalaProject {
 
   override def cleanAction = super.cleanAction dependsOn cleanTask(managedScalaPath)
   
-  class ProjectDirectoryRun extends ForkScalaRun {
-    override def workingDirectory = Some(info.projectPath.asFile)
-  }
-
-  type xsbt = { def forkRun: Option[ForkScala] }
-  override def fork = try {
-    this.asInstanceOf[xsbt].forkRun
-  } catch { // let's be nice and work with sbt 0.5.x for a while
-    case e: NoSuchMethodException => Some(new ProjectDirectoryRun)
-  }
+  override def fork = forkRun(info.projectPath.asFile)
   
   // permits a parameters to follow a call to Source#getLines in 2.7
   protected implicit def getLines27(iter: Iterator[String]) = new {
