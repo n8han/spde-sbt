@@ -16,7 +16,8 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
 
     override val templateMappings = Map(
       "sbt.version" -> SpdeSbtProject.this.sbtVersion.value,
-      "scala.version" -> SpdeSbtProject.this.buildScalaVersion,
+      "build.scala.version" -> SpdeSbtProject.this.buildScalaVersion,
+      "def.scala.version" -> SpdeSbtProject.this.defScalaVersion.value,
       "spde-sbt.version" -> version
     )
     lazy val proj_target = arcOutput / "graft"
