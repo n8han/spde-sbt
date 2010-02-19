@@ -20,7 +20,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
   /****** Dependencies  *******/
   val toolsConfig = config("tools")
   val defaultConfig = Configurations.Default
-  val proguardJar = "net.sf.proguard" % "proguard" % "4.3" % "tools->default"
+  val proguardJar = "net.sf.proguard" % "proguard" % "4.4" % "tools->default"
   
   /******** Proguard *******/
   private lazy val proguard = proguardTask dependsOn(`package`, glob, writeProguardConfiguration)
