@@ -37,24 +37,29 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
     val exitValue = Process("java", List("-Xmx256M", "-cp", proguardClasspathString, "proguard.ProGuard", "@" + configFile)) ! log
     if(exitValue == 0) None else Some("Proguard failed with nonzero exit code (" + exitValue + ")")
   }
-  private def renderInfo = {
+  object Renderers {
+    val P3D = "processing.core.PGraphics3D"
+    val JAVA2D = "processing.core.PGraphicsJava2D"
+    val OPENGL = "processing.opengl.PGraphicsOpenGL"
+    val PDF = "processing.pdf.PGraphicsPDF"
+    val DXF = "processing.dxf.RawDXF"
+    val map = Map("P3D" -> P3D, "JAVA2D" -> JAVA2D, "OPENGL" -> OPENGL, "PDF" -> PDF, "DXF" -> DXF)
+  }
+  def renderInfo = {
     // tasks that call here should depend on glob
     val sz = """(?s).*size\s*\(\s*(\d+)\s*,\s*(\d+),?\s*(\S*)\s*\).*""".r
-    val sz_line = io.Source.fromFile(sourceGlob.asFile).getLines().find(None != sz.findFirstIn(_))
-    val rendererMap = Map (
-      "P3D" -> "processing.core.PGraphics3D",
-      "JAVA2D" -> "processing.core.PGraphicsJava2D",
-      "OPENGL"-> "processing.opengl.PGraphicsOpenGL",
-      "PDF"-> "processing.pdf.PGraphicsPDF",
-      "DXF"-> "processing.dxf.RawDXF"
-    )
-    val univRenderers = "processing.core.PGraphicsJava2D" :: Nil
+    val sz_line = mainSources.getFiles.projection.elements.flatMap { source =>
+      io.Source.fromFile(source).getLines
+    } find { None != sz.findFirstIn(_) }
+    val univRenderers = Renderers.JAVA2D :: Nil
     
     sz_line match {
       case Some(sz(width, height)) => (width, height, univRenderers)
       case Some(sz(width, height, "")) => (width, height, univRenderers)
-      case Some(sz(width, height, r)) => (width, height, rendererMap(r) :: univRenderers)
-      case _ => (100, 100, univRenderers)
+      case Some(sz(width, height, r)) => (width, height, Renderers.map(r) :: univRenderers)
+      case _ => 
+        log.warn("Unable to guess sketch dimensions and renderer in sketch sources. Consider overriding renderInfo to specify.")
+        (100, 100, univRenderers)
     }
   }
   def proguardOptions = "-dontobfuscate" :: "-dontoptimize" :: "-dontnote" :: "-dontwarn" :: "-ignorewarnings" :: Nil
@@ -67,9 +72,8 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
         |-libraryjars %s
         |%s
         |-outjars %s
-        |-keep class %s
-        |-keep class MyRunner { *** main(...); }
-        |-keep class processing.core.PApplet { *** main(...); }
+        |-keep class * extends processing.core.PApplet
+        |-keep class * { void main(...); }
         |-keep class spde.core.SApplet { *** scripty(...); }
         |-keepclasseswithmembers class * { public void dispose(); }
         |"""
@@ -95,7 +99,8 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
         outTemplate.stripMargin.format(
           proguardOptions.mkString("\n"),
           libraryJars.map(quote).mkString(File.pathSeparator),
-          inJars, quote(outputJar.absolutePath), name
+          inJars, 
+          quote(outputJar.absolutePath)
         ) + renderers.map { renderer =>
             "-keep class %s { *** <init>(...); }\n" format renderer
           }.mkString
