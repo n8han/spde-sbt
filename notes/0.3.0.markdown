@@ -1,0 +1,8 @@
+* Using [Spde 0.2.4][1] libraries by default.
+* Updated for [Simple Build Tool 0.7.0][1]. Projects must use that version or higher.
+* Tested with Scala 2.8.0.Beta1, Graft project now initializes with 2.8.
+* Proguard is passed a -dontoptimize option in `AppletProject#applet` task to circumvent runtime errors with Scala 2.8. Output jars are larger, but still decently small after pack200 compression.
+* Default Proguard options defined in overridable `AppletProject#proguardOptions: List[String]`.
+
+[1]: http://implicit.ly/spde-024
+[2]: http://implicit.ly/simple-build-tool-070

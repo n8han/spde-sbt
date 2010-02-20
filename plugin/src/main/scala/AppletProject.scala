@@ -57,18 +57,16 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       case _ => (100, 100, univRenderers)
     }
   }
+  def proguardOptions = "-dontobfuscate" :: "-dontoptimize" :: "-dontnote" :: "-dontwarn" :: "-ignorewarnings" :: Nil
   private def writeProguardConfigurationTask = 
     fileTask(proguardConfigurationPath from sourceGlob)
     {
       // the template for the proguard configuration file
       val outTemplate = """
-        |-dontobfuscate
-        |-dontnote
-        |-dontwarn
+        |%s
         |-libraryjars %s
         |%s
         |-outjars %s
-        |-ignorewarnings
         |-keep class %s
         |-keep class MyRunner { *** main(...); }
         |-keep class processing.core.PApplet { *** main(...); }
@@ -94,8 +92,11 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       val (width, height, renderers) = renderInfo
       
       val proguardConfiguration =
-        outTemplate.stripMargin.format(libraryJars.map(quote).mkString(File.pathSeparator),
-          inJars, quote(outputJar.absolutePath), name) + renderers.map { renderer =>
+        outTemplate.stripMargin.format(
+          proguardOptions.mkString("\n"),
+          libraryJars.map(quote).mkString(File.pathSeparator),
+          inJars, quote(outputJar.absolutePath), name
+        ) + renderers.map { renderer =>
             "-keep class %s { *** <init>(...); }\n" format renderer
           }.mkString
       log.debug("Proguard configuration written to " + proguardConfigurationPath)

@@ -1,15 +1,13 @@
 import sbt._
 
-class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
+class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish
 {
-  // parent project should not be published
-  override def publishAction = task { None }
-  override def publishConfiguration = publishLocalConfiguration
-
   lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) with AutoCompilerPlugins {
     override def managedStyle = ManagedStyle.Maven
     lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
   })
+  
+  override def publishAction = super.publishAction && publishCurrentNotes
   
   lazy val graft = project("graft", "spde-sbt graft", new DefaultProject(_) with archetect.ArchetectProject {
     import Process._
@@ -29,7 +27,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info)
         case code => Some("sbt failed on archetect project %s with code %d" format (proj_target, code))
       }
     } dependsOn archetect
-
+    override def publishAction = task { None } && publishGraft
     val publishPath = Path.fromFile("/var/www/spde-graft/")
     lazy val publishGraft = copyTask((outputPath / "arc" * "*" / "target" ##) * "*.jar", 
         publishPath) dependsOn(installer)
