@@ -96,7 +96,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
         outTemplate.stripMargin.format(
           (proguardOptions ++ inJars ++ libraryJars).mkString("\n"),
           quote(outputJar.absolutePath),
-          appletClass
+          sketchClass
         ) + renderers.map { renderer =>
             "-keep class %s { *** <init>(...); }\n" format renderer
           }.mkString
@@ -111,7 +111,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       case (width, height, _)  => Map(
         "width" -> width, 
         "height" -> height,
-        "sketch" -> appletClass,
+        "sketch" -> sketchClass,
         "archive" -> outputJar.asFile.getName
       )
     }
