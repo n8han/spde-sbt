@@ -2,7 +2,7 @@ import sbt._
 
 class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish
 {
-  lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) with AutoCompilerPlugins {
+  lazy val plugin = project("plugin", "spde-sbt plugin", new PluginProject(_) with AutoCompilerPlugins {
     override def managedStyle = ManagedStyle.Maven
     lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
   })
