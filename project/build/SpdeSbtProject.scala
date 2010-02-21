@@ -30,7 +30,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with postero
     } dependsOn (plugin.publishLocal, archetect)
     override def publishAction = task { None }
     val publishPath = Path.fromFile("/var/www/spde-graft/")
-    lazy val publishGraft = copyTask((outputPath / "arc" * "*" / "target" ##) * "*.jar", 
+    lazy val publishGraft = copyTask((outputPath / "arc" * "*" / "target" * "scala*" ##) * "*.jar", 
         publishPath) dependsOn(installer)
   })
 }
