@@ -33,9 +33,13 @@ trait SpdeProject extends BasicScalaProject {
     def apply() = iter
   }
 
-  /** Override to match name of applet class if using straight sources.
+  /** Override to match name of sketch's applet class if using straight sources.
       Defaults to project name with non-letters replaced by underscores. */
-  def appletClass = joinedName
+  def sketchClass = joinedName
+  /** class that the sketch extends with managed sources */
+  def appletBaseClass = appletClass
+  /** @deprecated use appletBaseClass */
+  def appletClass = "ProxiedApplet"
   def runnerClass = joinedName + "Runner"
   lazy val joinedName = name.replaceAll("\\W", "_")
   def proxyClass = "DrawProxy"
@@ -50,11 +54,11 @@ trait SpdeProject extends BasicScalaProject {
         |object `%s` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |}
-        |class `%s` extends ProxiedApplet {
-        |  lazy val px = new DrawProxy(this) {
+        |class `%s` extends %s {
+        |  lazy val px = new %s(this) {
         |""".stripMargin.format(
           imports.mkString("import ", "\nimport ", ""), 
-          runnerClass, appletClass, appletClass
+          runnerClass, sketchClass, sketchClass, appletBaseClass, proxyClass
         ), log
       ) orElse {
         import scala.io.Source.fromFile
