@@ -2,11 +2,13 @@ import sbt._
 
 class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with posterous.Publish
 {
-  lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) with AutoCompilerPlugins)
-  override def managedStyle = ManagedStyle.Maven
-  lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
+  lazy val plugin = project("plugin", "Spde sbt plugin", new PluginProject(_) with AutoCompilerPlugins {
+    override def managedStyle = ManagedStyle.Maven
+    lazy val publishTo = Resolver.file("Databinder Repository", new java.io.File("/var/dbwww/repo"))
+  })
   
-  override def publishAction = super.publishAction && publishCurrentNotes
+  override def publishAction = task { None } dependsOn plugin.publish
+  lazy val publishExtras = task { None } dependsOn (publishCurrentNotes, graft.publishGraft)
   
   lazy val graft = project("graft", "spde-sbt graft", new DefaultProject(_) with archetect.ArchetectProject {
     import Process._
