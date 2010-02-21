@@ -69,11 +69,8 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       // the template for the proguard configuration file
       val outTemplate = """
         |%s
-        |-libraryjars %s
-        |%s
         |-outjars %s
-        |-keep class * extends processing.core.PApplet
-        |-keep class * { void main(...); }
+        |-keep class %s
         |-keep class spde.core.SApplet { *** scripty(...); }
         |-keepclasseswithmembers class * { public void dispose(); }
         |"""
@@ -88,19 +85,18 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       log.debug("proguard configuration external dependencies: \n\t" + externalDependencies.mkString("\n\t"))
       // partition jars from the external jar dependencies of this project by whether they are located in the project directory
       // if they are, they are specified with -injars, otherwise they are specified with -libraryjars
-      val (externalJars, libraryJars) = externalDependencies.toList.partition(jar => Path.relativize(rootProjectDirectory, jar).isDefined)
-      log.debug("proguard configuration library jars locations: " + libraryJars.mkString(", "))
+      val (projectJars, otherJars) = externalDependencies.toList.partition(jar => Path.relativize(rootProjectDirectory, jar).isDefined)
       // exclude properties files and manifests from scala-library jar
-      val inJars = (quote(defaultJar) :: externalJars.map(quote(_) + "(!META-INF/**,!*.txt)")).map("-injars " + _).mkString("\n")
+      val inJars = (quote(defaultJar) :: projectJars.map(quote(_) + "(!META-INF/**,!*.txt)")).map("-injars " + _)
+      val libraryJars = otherJars.map(quote).map { "-libraryjars " + _ }
       
       val (width, height, renderers) = renderInfo
       
       val proguardConfiguration =
         outTemplate.stripMargin.format(
-          proguardOptions.mkString("\n"),
-          libraryJars.map(quote).mkString(File.pathSeparator),
-          inJars, 
-          quote(outputJar.absolutePath)
+          (proguardOptions ++ inJars ++ libraryJars).mkString("\n"),
+          quote(outputJar.absolutePath),
+          appletClass
         ) + renderers.map { renderer =>
             "-keep class %s { *** <init>(...); }\n" format renderer
           }.mkString
@@ -115,7 +111,7 @@ trait AppletProject extends SpdeProject with BasicPackagePaths with archetect.Te
       case (width, height, _)  => Map(
         "width" -> width, 
         "height" -> height,
-        "sketch" -> name,
+        "sketch" -> appletClass,
         "archive" -> outputJar.asFile.getName
       )
     }

@@ -33,7 +33,11 @@ trait SpdeProject extends BasicScalaProject {
     def apply() = iter
   }
 
-  def appletClass = "ProxiedApplet"
+  /** Override to match name of applet class if using straight sources.
+      Defaults to project name with non-letters replaced by underscores. */
+  def appletClass = joinedName
+  def runnerClass = joinedName + "Runner"
+  lazy val joinedName = name.replaceAll("\\W", "_")
   def proxyClass = "DrawProxy"
   def imports = "processing.core._" :: "spde.core._" :: "PConstants._" :: "PApplet._" :: Nil
 
@@ -43,14 +47,14 @@ trait SpdeProject extends BasicScalaProject {
     if (sources.isEmpty) None else
       FileUtilities.write(sgf,
 """     |%s
-        |object `%sRunner` {
+        |object `%s` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |}
-        |class `%s` extends %s {
-        |  lazy val px = new %s(this) {
+        |class `%s` extends ProxiedApplet {
+        |  lazy val px = new DrawProxy(this) {
         |""".stripMargin.format(
           imports.mkString("import ", "\nimport ", ""), 
-          name, name, name, appletClass, proxyClass
+          runnerClass, appletClass, appletClass
         ), log
       ) orElse {
         import scala.io.Source.fromFile
