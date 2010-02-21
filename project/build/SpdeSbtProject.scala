@@ -26,7 +26,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with postero
         case 0 => None
         case code => Some("sbt failed on archetect project %s with code %d" format (proj_target, code))
       }
-    } dependsOn archetect
+    } dependsOn (plugin.publishLocal, archetect)
     override def publishAction = task { None } && publishGraft
     val publishPath = Path.fromFile("/var/www/spde-graft/")
     lazy val publishGraft = copyTask((outputPath / "arc" * "*" / "target" ##) * "*.jar", 
