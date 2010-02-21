@@ -8,7 +8,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with postero
   })
   
   override def publishAction = task { None } dependsOn plugin.publish
-  lazy val publishExtras = task { None } dependsOn (publishCurrentNotes, graft.publishGraft)
+  lazy val publishExtras = task { None } dependsOn (graft.publishGraft, publishCurrentNotes)
   
   lazy val graft = project("graft", "spde-sbt graft", new DefaultProject(_) with archetect.ArchetectProject {
     import Process._
@@ -28,7 +28,7 @@ class SpdeSbtProject(info: ProjectInfo) extends ParentProject(info) with postero
         case code => Some("sbt failed on archetect project %s with code %d" format (proj_target, code))
       }
     } dependsOn (plugin.publishLocal, archetect)
-    override def publishAction = task { None } && publishGraft
+    override def publishAction = task { None }
     val publishPath = Path.fromFile("/var/www/spde-graft/")
     lazy val publishGraft = copyTask((outputPath / "arc" * "*" / "target" ##) * "*.jar", 
         publishPath) dependsOn(installer)
