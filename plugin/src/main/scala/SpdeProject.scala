@@ -8,7 +8,7 @@ class DefaultSpdeProject(info: ProjectInfo) extends DefaultProject(info) with Sp
 
 trait SpdeProject extends BasicScalaProject {
   val databinder_repo = "Databinder Repository" at "http://databinder.net/repo"
-  val spdeVersion = propertyOptional[String]("0.2.4-SNAPSHOT")
+  val spdeVersion = propertyOptional[String]("0.2.4")
   val processingVersion = propertyOptional[String]("1.0.9")
   val spde = "us.technically.spde" %% "spde-core" % spdeVersion.value
 
@@ -26,23 +26,22 @@ trait SpdeProject extends BasicScalaProject {
 
   override def cleanAction = super.cleanAction dependsOn cleanTask(managedScalaPath)
   
-  class ProjectDirectoryRun extends ForkScalaRun {
-    override def workingDirectory = Some(info.projectPath.asFile)
-  }
-
-  type xsbt = { def forkRun: Option[ForkScala] }
-  override def fork = try {
-    this.asInstanceOf[xsbt].forkRun
-  } catch { // let's be nice and work with sbt 0.5.x for a while
-    case e: NoSuchMethodException => Some(new ProjectDirectoryRun)
-  }
+  override def fork = forkRun(info.projectPath.asFile)
   
   // permits a parameters to follow a call to Source#getLines in 2.7
   protected implicit def getLines27(iter: Iterator[String]) = new {
     def apply() = iter
   }
 
+  /** Override to match name of sketch's applet class if using straight sources.
+      Defaults to project name with non-letters replaced by underscores. */
+  def sketchClass = joinedName
+  /** class that the sketch extends with managed sources */
+  def appletBaseClass = appletClass
+  /** @deprecated use appletBaseClass */
   def appletClass = "ProxiedApplet"
+  def runnerClass = joinedName + "Runner"
+  lazy val joinedName = name.replaceAll("\\W", "_")
   def proxyClass = "DrawProxy"
   def imports = "processing.core._" :: "spde.core._" :: "PConstants._" :: "PApplet._" :: Nil
 
@@ -52,14 +51,14 @@ trait SpdeProject extends BasicScalaProject {
     if (sources.isEmpty) None else
       FileUtilities.write(sgf,
 """     |%s
-        |object `%sRunner` {
+        |object `%s` {
         |  def main(args: Array[String]) { PApplet.main(Array(classOf[`%s`].getName)) }
         |}
         |class `%s` extends %s {
         |  lazy val px = new %s(this) {
         |""".stripMargin.format(
           imports.mkString("import ", "\nimport ", ""), 
-          name, name, name, appletClass, proxyClass
+          runnerClass, sketchClass, sketchClass, appletBaseClass, proxyClass
         ), log
       ) orElse {
         import scala.io.Source.fromFile

@@ -1,6 +1,6 @@
 size(500, 200)
 frameRate(20)
-val items = { 0 to width } map { (_, random(255).toInt) }
+val items = { 0 to width }.view.map { (_, random(255).toInt) }
 
 def draw {
   for ((x, color) <- items) {

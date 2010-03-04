@@ -7,9 +7,10 @@ class DefaultOpenGLProject(info: ProjectInfo) extends DefaultProject(info) with 
 
 trait OpenGLProject extends SpdeProject with PackagePaths with JoglProject {
   val opengl = "org.processing" % "opengl" % processingVersion.value
-  override def fork = Some(new ProjectDirectoryRun { 
-    override def runJVMOptions = "-Djava.library.path=./lib_managed/compile/" :: Nil
-  } )
+  override def fork = forkRun(
+    Some(info.projectPath.asFile),
+    ("-Djava.library.path=" +  (managedDependencyPath / "compile").asFile.getAbsolutePath) :: Nil
+  )
 }
 
 trait JoglProject extends BasicManagedProject {
