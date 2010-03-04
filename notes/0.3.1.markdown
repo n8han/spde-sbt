@@ -1,0 +1,3 @@
+* Fixed sbt launcher name in the graft's `sbt` and `sbt.bat` scripts, bug [reported on Twitter][tw].
+
+[tw]: http://twitter.com/andyczerwonka/statuses/9917214080
