@@ -8,8 +8,8 @@ class DefaultSpdeProject(info: ProjectInfo) extends DefaultProject(info) with Sp
 
 trait SpdeProject extends BasicScalaProject {
   val databinder_repo = "Databinder Repository" at "http://databinder.net/repo"
-  val spdeVersion = propertyOptional[String]("0.2.4")
-  val processingVersion = propertyOptional[String]("1.0.9")
+  val spdeVersion = propertyOptional[String]("0.2.5-SNAPSHOT")
+  val processingVersion = propertyOptional[String]("1.1")
   val spde = "us.technically.spde" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
