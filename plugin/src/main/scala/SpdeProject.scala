@@ -10,7 +10,8 @@ trait SpdeProject extends BasicScalaProject {
   val databinder_repo = "Databinder Repository" at "http://databinder.net/repo"
   val spdeVersion = propertyOptional[String]("0.2.5-SNAPSHOT")
   val processingVersion = propertyOptional[String]("1.1")
-  val spde = "us.technically.spde" %% "spde-core" % spdeVersion.value
+  val spde = spde_artifact
+  def spde_artifact = "us.technically.spde" %% "spde-core" % spdeVersion.value
 
   val spdeSourcePath = path(".")
   val spdeSources = spdeSourcePath * "*.spde"
