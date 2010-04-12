@@ -1,0 +1,4 @@
+* Project traits depend on Spde 0.3.0, Processing 1.1
+* New `SpdeAndroidProject` trait depends on the Android Processing core, works with [android-plugin][ap]
+
+[ap]: http://github.com/jberkel/android-plugin
