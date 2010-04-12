@@ -15,7 +15,7 @@ trait GSVideoProject extends BasicScalaProject{
   def gsvideoArtifactExt = "zip"
   def gsvideoArtifactName = <x>{gsvideoName}-{gsvideoVersion}.{gsvideoArtifactExt}</x>.text
   val gsvideoConf = Configurations.config(gsvideoName)
-  def gsvideoURL = new URL( <x>http://sourceforge.net/projects/{gsvideoName}/files/{gsvideoName}/{gsvideoMainVersion}/{gsvideoArtifactName}/download</x>.text )
+  def gsvideoURL = new URL( <x>http://downloads.sourceforge.net/project/{gsvideoName}/{gsvideoName}/{gsvideoMainVersion}/{gsvideoArtifactName}</x>.text )
 
   val jna = "jna" % "jna" % "3.0.9" from("http://gstreamer-java.googlecode.com/files/jna-3.0.9.jar")
   val gstreamerJava = "gstreamer.java" % "gstreamer-java" % "1.2" from("http://gstreamer-java.googlecode.com/files/gstreamer-java-1.2.jar")
