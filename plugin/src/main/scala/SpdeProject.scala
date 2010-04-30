@@ -13,12 +13,12 @@ trait SpdeProject extends BasicScalaProject {
   val spde = spde_artifact
   def spde_artifact = "us.technically.spde" %% "spde-core" % spdeVersion.value
 
-  val spdeSourcePath = path(".")
-  val spdeSources = spdeSourcePath * "*.spde"
-  val managedSources = "src_managed" / "main"
-  val managedScalaPath = managedSources / "scala"
-  val managedResourcesPath = managedSources / "resources"
-  val sourceGlob = managedScalaPath / "glob.scala"
+  def spdeSourcePath = path(".")
+  def spdeSources = spdeSourcePath * "*.spde"
+  def managedSources = "src_managed" / "main"
+  def managedScalaPath = managedSources / "scala"
+  def managedResourcesPath = managedSources / "resources"
+  def sourceGlob = managedScalaPath / "glob.scala"
   abstract override def mainSourceRoots = super.mainSourceRoots +++ managedScalaPath
   abstract override def mainResources = super.mainResources +++ descendents(managedResourcesPath ##, "*")
   override def compileAction = super.compileAction dependsOn (glob, data)
