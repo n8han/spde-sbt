@@ -1,0 +1,3 @@
+Made `spdeSourcePath` (the search path for `*.spde` files) overridable as [requested in the forum][forum].
+
+[forum]: http://spde.3684855.n2.nabble.com/sbt-plugin-override-spdeSourcePath-td4978307.html
