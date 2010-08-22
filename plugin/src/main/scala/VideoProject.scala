@@ -9,19 +9,19 @@ import FileUtilities.{copyFlat, unzip, withTemporaryDirectory => tempDirectory}
 class DefaultVideoProject(info: ProjectInfo) extends DefaultProject(info) with SpdeProject
 
 trait GSVideoProject extends BasicScalaProject{
-  def gsvideoMainVersion = "0.6"
-  def gsvideoVersion = gsvideoMainVersion + "-pre0"
+  def gsvideoVersion = "0.7"
   def gsvideoName = "gsvideo"
   def gsvideoArtifactExt = "zip"
-  def gsvideoArtifactName = <x>{gsvideoName}-{gsvideoVersion}.{gsvideoArtifactExt}</x>.text
+  def gsvideoArtifactName = <x>GSVideo-Linux-{gsvideoVersion}.{gsvideoArtifactExt}</x>.text
   val gsvideoConf = Configurations.config(gsvideoName)
-  def gsvideoURL = <x>http://downloads.sourceforge.net/project/{gsvideoName}/{gsvideoName}/{gsvideoMainVersion}/{gsvideoArtifactName}</x>.text
+  def gsvideoURL = <x>http://downloads.sourceforge.net/project/{gsvideoName}/{gsvideoName}/{gsvideoVersion}/{gsvideoArtifactName}</x>.text
 
   val gstreamerJava =  "com.googlecode.gstreamer-java" % "gstreamer-java" % "1.4"
   val gsvideo = gsvideoName % gsvideoName % gsvideoVersion % (gsvideoConf + "->default") from(gsvideoURL)
 
-  def gsvideoFilter: NameFilter = "gsvideo/library/gsvideo.jar"
-  def gsvideoZip = configurationPath(gsvideoConf)  / gsvideoArtifactName
+  def gsvideoFilter: NameFilter = "GSVideo/library/GSVideo.jar"
+  def gsvideoZip = configurationPath(gsvideoConf)  / "%s-%s.%s".format(
+    gsvideoName, gsvideoVersion, gsvideoArtifactExt)
   
   override def updateAction = gsvideoExtract dependsOn(super.updateAction)
   lazy val gsvideoExtract = task {
@@ -41,7 +41,7 @@ trait SampleProject extends VideoProject
 {
   def sampleDirectory: Path = "data"
   def sampleVideo = sampleDirectory / "station.mov"
-  def sampleFilter = "gsvideo/examples/Movie/Loop/data/station.mov"
+  def sampleFilter = "GSVideo/examples/Movie/Loop/data/station.mov"
   override def gsvideoFilter = super.gsvideoFilter | sampleFilter
   override def copyExtracted(files: scala.collection.Set[Path]) =
   {
